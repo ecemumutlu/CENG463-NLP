@@ -1,0 +1,10 @@
+pip install spacy
+pip install spacy-transformers
+python -m spacy convert ./Task1/tr_imst-ud-train.conllu ./Task1/ --converter conllu --n-sents 10 --merge-subtokens
+python -m spacy convert ./Task1/tr_imst-ud-dev.conllu ./Task1/ --converter conllu --n-sents 10 --merge-subtokens
+python -m spacy convert ./Task1/tr_imst-ud-test.conllu ./Task1/ --converter conllu --n-sents 10 --merge-subtokens
+python -m spacy init config config.cfg --lang tr --pipeline transformer,tagger,morphologizer,trainable_lemmatizer,ner,parser --gpu
+python -m spacy init labels config.cfg ./ --paths.train ./Task1/tr_imst-ud-train.spacy --paths.dev ./Task1/tr_imst-ud-dev.spacy --gpu-id 0
+mkdir output
+python -m spacy train config.cfg --output ./output/ --paths.train ./Task1/tr_imst-ud-train.spacy --paths.dev ./Task1/tr_imst-ud-dev.spacy --training.max_epochs 300 --nlp.batch_size 128 --training.dropout 0.2 --training.patience 1000000 --training.eval_frequency 200 --components.trainable_lemmatizer.min_tree_freq 1 --gpu-id 0
+python -m spacy evaluate ./output/model-best/ ./Task1/tr_imst-ud-test.spacy --gpu-id 0
